@@ -1092,24 +1092,32 @@ footer {
           </a>
         </div>
       </div>
-      <div class="form">
-        <div class="frow">
-          <input type="text" id="fn" placeholder=" "/>
-          <label for="fn">Your Name</label>
+    <form class="form" action="https://formspree.io/f/xyknleyz" method="POST" id="contact-form">
+            <div class="frow">
+              <input type="text" id="fn" name="name" placeholder=" " required/>
+              <label for="fn">Your Name</label>
+            </div>
+            <div class="frow">
+              <input type="email" id="fe" name="email" placeholder=" " required/>
+              <label for="fe">Your Email</label>
+            </div>
+            <div class="frow">
+              <input type="text" id="fs" name="subject" placeholder=" " required/>
+              <label for="fs">Subject</label>
+            </div>
+            <div class="frow">
+              <textarea id="fm" name="message" rows="5" placeholder=" " required></textarea>
+              <label for="fm">Message</label>
+            </div>
+            <button type="submit" class="form-submit" id="submit-btn">Send Message</button>
+            <div id="form-success" style="display:none; margin-top:16px; padding:16px 20px; background:rgba(192,57,43,0.1); border:1px solid rgba(192,57,43,0.4); font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.2em; color:#E74C3C;">
+              MESSAGE SENT — I'LL GET BACK TO YOU SOON.
+            </div>
+            <div id="form-error" style="display:none; margin-top:16px; padding:16px 20px; background:rgba(255,255,255,0.03); border:1px solid rgba(245,240,235,0.1); font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.2em; color:rgba(245,240,235,0.6);">
+              SOMETHING WENT WRONG — PLEASE EMAIL ME DIRECTLY.
+            </div>
+          </form>
         </div>
-        <div class="frow">
-          <input type="email" id="fe" placeholder=" "/>
-          <label for="fe">Your Email</label>
-        </div>
-        <div class="frow">
-          <input type="text" id="fs" placeholder=" "/>
-          <label for="fs">Subject</label>
-        </div>
-        <div class="frow">
-          <textarea id="fm" rows="5" placeholder=" "></textarea>
-          <label for="fm">Message</label>
-        </div>
-        <button class="form-submit">Send Message</button>
       </div>
     </div>
   </div>
@@ -1627,10 +1635,43 @@ window.addEventListener('scroll', () => {
 })();
 
 // ─── INTERSECTION OBSERVER ────────────────────────────────────────────────────
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+  contactForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const success = document.getElementById('form-success');
+    const error = document.getElementById('form-error');
+    btn.textContent = 'SENDING...';
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    try {
+      const res = await fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        success.style.display = 'block';
+        error.style.display = 'none';
+        contactForm.reset();
+        btn.textContent = 'SENT ✓';
+        btn.style.background = '#1a1a1a';
+      } else {
+        throw new Error('Failed');
+      }
+    } catch {
+      error.style.display = 'block';
+      success.style.display = 'none';
+      btn.textContent = 'Send Message';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  });
+}
 const obs = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.08 });
-
 document.querySelectorAll('.exp-item, .ach-card, .proj-item, .skill-card').forEach((el, i) => {
   el.style.transitionDelay = (i % 4) * 0.1 + 's';
   obs.observe(el);
