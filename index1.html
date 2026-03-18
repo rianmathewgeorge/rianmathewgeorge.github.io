@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rian Mathew George</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --red: #C0392B;
+  --red-bright: #E74C3C;
+  --red-deep: #7B241C;
+  --red-glow: rgba(192, 57, 43, 0.4);
+  --red-subtle: rgba(192, 57, 43, 0.08);
+  --white: #F5F0EB;
+  --white2: #EDE8E0;
+  --cream: #D4C9BB;
+  --dark: #080808;
+  --dark2: #0D0D0D;
+  --dark3: #111111;
+  --mid: #222222;
+  --border: rgba(245, 240, 235, 0.14);
+  --border-red: rgba(192, 57, 43, 0.4);
+  --text-dim: rgba(245, 240, 235, 0.75);
+  --text-mid: rgba(245, 240, 235, 0.92);
+  --font-display: 'Playfair Display', 'Times New Roman', Georgia, serif;
+  --font-body: 'EB Garamond', 'Times New Roman', Georgia, serif;
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  background: var(--dark);
+  color: var(--white);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  cursor: none;
+  line-height: 1.6;
+}
+
+/* ─── CURSOR ─── */
+#cur {
+  position: fixed; width: 8px; height: 8px;
+  background: var(--red-bright); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width .2s, height .2s, background .2s;
+}
+#cur-ring {
+  position: fixed; width: 32px; height: 32px;
+  border: 1px solid rgba(192, 57, 43, 0.6);
+  border-radius: 50%; pointer-events: none; z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width .3s, height .3s, border-color .3s;
+}
+body:has(a:hover) #cur, body:has(button:hover) #cur { width: 14px; height: 14px; }
+body:has(a:hover) #cur-ring, body:has(button:hover) #cur-ring { width: 50px; height: 50px; border-color: var(--red); }
+
+/* ─── PROGRESS ─── */
+#prog {
+  position: fixed; top: 0; left: 0; height: 1px;
+  background: linear-gradient(to right, var(--red-deep), var(--red), var(--red-bright));
+  z-index: 1000; width: 0; transition: width .05s;
+}
+
+/* ─── LOADER ─── */
+#loader {
+  position: fixed; inset: 0; background: #000;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 32px; z-index: 9000;
+  transition: opacity 1s ease;
+}
+.loader-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 400;
+  letter-spacing: 0.6em; color: var(--cream);
+  text-transform: uppercase;
+}
+.loader-line {
+  width: 180px; height: 1px;
+  background: rgba(255,255,255,0.06); position: relative; overflow: hidden;
+}
+.loader-line::after {
+  content: ''; position: absolute; left: -100%; top: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(to right, transparent, var(--red), transparent);
+  animation: lineMove 1.4s ease forwards;
+}
+@keyframes lineMove { to { left: 100%; } }
+.loader-num {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 0.3em; color: var(--red);
+}
+
+/* ─── CANVAS BG ─── */
+#bg-canvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none; opacity: 0.6;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  padding: 28px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid transparent;
+  transition: border-color .4s, background .4s, padding .4s;
+}
+nav.scrolled {
+  padding: 18px 60px;
+  background: rgba(8, 8, 8, 0.92);
+  backdrop-filter: blur(20px);
+  border-color: var(--border);
+}
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 0.95rem; font-weight: 700; letter-spacing: 0.15em;
+  color: var(--white); text-decoration: none;
+}
+.nav-logo span { color: var(--red); }
+.nav-links { display: flex; gap: 44px; list-style: none; }
+.nav-links a {
+  font-family: var(--font-mono);
+  font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: rgba(245,240,235,0.85); text-decoration: none;
+  transition: color .3s; position: relative;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: -2px; left: 0;
+  width: 0; height: 1px; background: var(--red);
+  transition: width .3s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-links a:hover::after { width: 100%; }
+.nav-cta {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 0.2em; padding: 10px 24px;
+  border: 1px solid var(--border-red); color: var(--red);
+  text-decoration: none; text-transform: uppercase;
+  transition: all .3s;
+}
+.nav-cta:hover { background: var(--red); color: var(--white); }
+
+/* ─── HERO ─── */
+#hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center; overflow: hidden;
+  background: #080808;
+}
+#hero-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
+}
+.hero-left {
+  position: relative; z-index: 2;
+  padding: 180px 60px 100px;
+}
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.62rem; letter-spacing: 0.45em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 28px;
+  display: flex; align-items: center; gap: 16px;
+  opacity: 0; transform: translateY(20px);
+  animation: up .8s .6s forwards;
+}
+.hero-eyebrow::before {
+  content: ''; width: 30px; height: 1px; background: var(--red); flex-shrink: 0;
+}
+.hero-name {
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 5.5vw, 6.2rem);
+  font-weight: 900; line-height: 1.05;
+  color: var(--white); letter-spacing: -0.01em;
+  opacity: 0; transform: translateY(30px);
+  animation: up .9s .8s forwards;
+}
+.hero-name em {
+  font-style: italic; color: var(--red);
+  display: block; line-height: 1.05;
+}
+.name-line {
+  display: block;
+  line-height: 1.05;
+  margin: 0; padding: 0;
+}
+.hero-subtitle {
+  font-family: var(--font-cormorant);
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  font-weight: 300; letter-spacing: 0.08em;
+  color: rgba(245,240,235,0.85); margin-top: 24px;
+  line-height: 1.7;
+  opacity: 0; transform: translateY(20px);
+  animation: up .8s 1s forwards;
+}
+.hero-meta {
+  display: flex; gap: 32px; margin-top: 40px; flex-wrap: wrap;
+  opacity: 0; animation: up .8s 1.2s forwards;
+}
+.hero-meta-item {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.hero-meta-val {
+  font-family: var(--font-display);
+  font-size: 1.8rem; font-weight: 700; color: var(--red);
+  line-height: 1;
+}
+.hero-meta-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--text-dim);
+}
+.hero-actions {
+  display: flex; gap: 16px; margin-top: 50px; flex-wrap: wrap;
+  opacity: 0; animation: up .8s 1.4s forwards;
+}
+.btn-red {
+  padding: 15px 36px;
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+  background: var(--red); color: var(--white); border: none;
+  cursor: none; text-decoration: none; display: inline-block;
+  transition: background .3s, transform .3s, box-shadow .3s;
+}
+.btn-red:hover {
+  background: var(--red-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(192, 57, 43, 0.35);
+}
+.btn-ghost {
+  padding: 15px 36px;
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+  background: transparent; color: var(--text-mid);
+  border: 1px solid var(--border); cursor: none; text-decoration: none; display: inline-block;
+  transition: all .3s;
+}
+.btn-ghost:hover { border-color: var(--border-red); color: var(--white); }
+
+/* ─── HERO 3D FIGURE ─── */
+.hero-right {
+  position: relative; z-index: 2;
+  height: 100vh;
+  width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#figure-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 3;
+  display: block;
+}
+.hero-scroll {
+  position: absolute; bottom: 40px; left: 60px; z-index: 2;
+  display: flex; align-items: center; gap: 16px;
+  opacity: 0; animation: fadeIn 1s 2s forwards;
+}
+.hero-scroll span {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-dim);
+}
+.scroll-line {
+  width: 60px; height: 1px;
+  background: linear-gradient(to right, var(--red), transparent);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+/* ─── SHARED SECTION ─── */
+section { position: relative; z-index: 1; }
+.container { max-width: 1240px; margin: 0 auto; padding: 0 60px; }
+.section-eyebrow {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  letter-spacing: 0.45em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 16px;
+}
+.section-eyebrow::before { content: ''; width: 30px; height: 1px; background: var(--red); }
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 5vw, 5.5rem);
+  font-weight: 900; line-height: 1.0; letter-spacing: -0.01em;
+  color: var(--white);
+}
+.section-title em { font-style: italic; color: var(--red); }
+.section-title .light { font-weight: 300; font-style: italic; }
+
+/* ─── ABOUT ─── */
+#about { padding: 140px 0; background: var(--dark); }
+.about-grid {
+  display: grid; grid-template-columns: 5fr 4fr; gap: 100px; align-items: start;
+}
+.about-body {
+  font-family: var(--font-cormorant);
+  font-size: 1.25rem; line-height: 1.85; color: rgba(245,240,235,0.92);
+  font-weight: 300;
+}
+.about-body p { margin-bottom: 20px; }
+.about-body strong { color: var(--white); font-weight: 600; }
+.about-body .red { color: var(--red-bright); font-weight: 400; }
+.about-quote {
+  margin: 40px 0;
+  padding: 28px 32px;
+  border-left: 2px solid var(--red);
+  background: var(--red-subtle);
+}
+.about-quote p {
+  font-family: var(--font-display);
+  font-size: 1.3rem; font-style: italic;
+  color: var(--white); margin: 0; line-height: 1.6;
+}
+.about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.stat-box {
+  background: var(--mid); padding: 32px 28px;
+  border-top: 1px solid var(--border);
+  transition: border-color .3s;
+}
+.stat-box:hover { border-color: var(--border-red); }
+.stat-n {
+  font-family: var(--font-display);
+  font-size: 3rem; font-weight: 900; color: var(--red);
+  line-height: 1; margin-bottom: 6px;
+}
+.stat-l {
+  font-family: var(--font-mono); font-size: 0.6rem;
+  letter-spacing: 0.25em; text-transform: uppercase; color: rgba(245,240,235,0.7);
+}
+
+/* ─── ABOUT SIDEBAR ─── */
+.about-sidebar { padding-top: 60px; }
+.sidebar-block { margin-bottom: 44px; }
+.sidebar-label {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.sidebar-content {
+  font-family: var(--font-cormorant);
+  font-size: 1.05rem; color: rgba(245,240,235,0.88); line-height: 1.7;
+}
+
+/* ─── EXPERIENCE ─── */
+#experience { padding: 140px 0; background: var(--dark2); }
+.exp-header {
+  display: grid; grid-template-columns: 1fr 2fr;
+  gap: 80px; align-items: start; margin-bottom: 80px;
+}
+.exp-intro {
+  font-family: var(--font-cormorant);
+  font-size: 1.15rem; color: var(--text-mid); line-height: 1.8;
+}
+.exp-list { display: flex; flex-direction: column; }
+.exp-item {
+  display: grid; grid-template-columns: 160px 1fr;
+  gap: 48px; padding: 48px 0;
+  border-top: 1px solid rgba(245,240,235,0.1);
+  opacity: 1; transform: none;
+  transition: border-color .3s;
+}
+.exp-item.visible { opacity: 1; transform: translateY(0); }
+.exp-item:hover { border-color: var(--red); }
+.exp-date {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  letter-spacing: 0.2em; color: rgba(245,240,235,0.75);
+  text-transform: uppercase; line-height: 1.6; padding-top: 6px;
+}
+.exp-date .current {
+  display: inline-block; margin-top: 8px; padding: 3px 10px;
+  background: var(--red-subtle); border: 1px solid var(--border-red);
+  color: var(--red); font-size: 0.58rem; letter-spacing: 0.25em;
+}
+.exp-main {}
+.exp-role {
+  font-family: var(--font-display);
+  font-size: 1.7rem; font-weight: 700; color: var(--white);
+  margin-bottom: 4px; line-height: 1.2;
+}
+.exp-company {
+  font-family: var(--font-cormorant);
+  font-size: 1rem; font-style: italic; color: var(--red-bright);
+  margin-bottom: 20px; letter-spacing: 0.04em;
+}
+.exp-desc {
+  list-style: none;
+}
+.exp-desc li {
+  font-family: var(--font-cormorant);
+  font-size: 1.05rem; color: rgba(245,240,235,0.88); line-height: 1.75;
+  padding: 5px 0; padding-left: 18px; position: relative;
+}
+.exp-desc li::before {
+  content: '—'; position: absolute; left: 0;
+  color: var(--red); font-size: 0.8rem;
+}
+
+/* ─── SKILLS ─── */
+#skills { padding: 140px 0; background: var(--dark); }
+.skills-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 80px; align-items: start; }
+.skills-intro {
+  font-family: var(--font-cormorant); font-size: 1.1rem;
+  color: rgba(245,240,235,0.88); line-height: 1.85; margin-top: 40px;
+}
+.skills-grid { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.skill-card {
+  padding: 36px 32px; background: var(--mid);
+  border: 1px solid rgba(245,240,235,0.1);
+  opacity: 1; transform: none;
+  transition: border-color .3s, background .3s, transform .3s, box-shadow .3s;
+}
+.skill-card.visible { opacity: 1; transform: translateY(0); }
+.skill-card:hover { border-color: var(--red); background: rgba(192,57,43,0.06); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(192,57,43,0.15); }
+.skill-category {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 22px;
+  border-bottom: 1px solid rgba(192,57,43,0.3);
+  padding-bottom: 12px;
+}
+.skill-items { display: flex; flex-direction: column; gap: 12px; }
+.skill-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 0; border-bottom: 1px solid rgba(245,240,235,0.05);
+}
+.skill-name-text {
+  font-family: var(--font-cormorant);
+  font-size: 1.1rem; color: #F5F0EB; font-weight: 400;
+}
+.skill-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(245,240,235,0.15); flex-shrink: 0; }
+.skill-dot.active { background: var(--red); box-shadow: 0 0 8px rgba(192,57,43,0.6); }
+
+/* ─── ACHIEVEMENTS ─── */
+#achievements { padding: 140px 0; background: var(--dark2); }
+.ach-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-top: 60px;
+}
+.ach-card {
+  background: var(--mid); padding: 44px 36px;
+  border-top: 2px solid rgba(245,240,235,0.12);
+  border-left: 1px solid rgba(245,240,235,0.08);
+  position: relative; overflow: hidden;
+  opacity: 1; transform: none;
+  transition: border-color .3s, transform .3s, box-shadow .3s;
+}
+.ach-card.visible { opacity: 1; transform: translateY(0); }
+.ach-card:hover { border-color: var(--red); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(192,57,43,0.2); }
+.ach-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: var(--red); transform: scaleX(0); transform-origin: left;
+  transition: transform .4s;
+}
+.ach-card:hover::before { transform: scaleX(1); }
+.ach-num {
+  font-family: var(--font-display);
+  font-size: 5rem; font-weight: 900;
+  color: rgba(192, 57, 43, 0.12); line-height: 1;
+  position: absolute; top: 16px; right: 24px;
+}
+.ach-badge {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 20px;
+  display: block;
+}
+.ach-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem; font-weight: 700; color: #FFFFFF;
+  line-height: 1.3; margin-bottom: 14px;
+}
+.ach-desc {
+  font-family: var(--font-cormorant);
+  font-size: 1rem; color: rgba(245,240,235,0.85); line-height: 1.7;
+}
+
+/* ─── PROJECTS ─── */
+#projects { padding: 140px 0; background: var(--dark); }
+.proj-header { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; margin-bottom: 80px; }
+.proj-intro {
+  font-family: var(--font-cormorant); font-size: 1.15rem;
+  color: var(--text-mid); line-height: 1.8; margin-top: 32px;
+}
+.proj-list { display: flex; flex-direction: column; }
+.proj-item {
+  display: grid; grid-template-columns: 60px 1fr auto;
+  gap: 40px; align-items: start; padding: 44px 0;
+  border-top: 1px solid rgba(245,240,235,0.1);
+  opacity: 1; transform: none;
+  transition: border-color .3s;
+}
+.proj-item.visible { opacity: 1; transform: translateX(0); }
+.proj-item:hover { border-color: var(--red); }
+.proj-n {
+  font-family: var(--font-display); font-size: 1.1rem;
+  font-weight: 700; color: var(--red); opacity: 0.5;
+  padding-top: 4px;
+}
+.proj-name {
+  font-family: var(--font-display); font-size: 1.6rem;
+  font-weight: 700; color: var(--white); margin-bottom: 10px; line-height: 1.2;
+}
+.proj-desc {
+  font-family: var(--font-cormorant); font-size: 1.05rem;
+  color: rgba(245,240,235,0.85); line-height: 1.7; margin-bottom: 16px;
+}
+.proj-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+.proj-tag {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 4px 12px; border: 1px solid rgba(245,240,235,0.2);
+  color: rgba(245,240,235,0.75);
+}
+.proj-link {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--red); text-decoration: none;
+  white-space: nowrap; padding-top: 6px;
+  transition: letter-spacing .3s;
+  display: flex; align-items: center; gap: 8px;
+}
+.proj-link:hover { letter-spacing: 0.3em; }
+
+/* ─── CONTACT ─── */
+#contact { padding: 140px 0; background: var(--dark2); }
+.contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; }
+.contact-body {
+  font-family: var(--font-cormorant); font-size: 1.1rem;
+  color: rgba(245,240,235,0.88); line-height: 1.85; margin-top: 32px; margin-bottom: 48px;
+}
+.contact-items { display: flex; flex-direction: column; gap: 2px; }
+.contact-item {
+  display: flex; align-items: center; gap: 24px;
+  padding: 22px 24px; background: var(--mid);
+  border: 1px solid rgba(245,240,235,0.08); text-decoration: none;
+  transition: border-color .3s, transform .3s, background .3s;
+}
+.contact-item:hover {
+  border-color: var(--border-red); background: rgba(192,57,43,0.04);
+  transform: translateX(6px);
+}
+.contact-icon {
+  width: 36px; height: 36px;
+  border: 1px solid var(--border-red);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 0.65rem; color: var(--red);
+  flex-shrink: 0;
+}
+.contact-info {}
+.contact-lbl {
+  font-family: var(--font-mono); font-size: 0.55rem;
+  letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245,240,235,0.55);
+}
+.contact-val {
+  font-family: var(--font-cormorant); font-size: 1rem;
+  color: var(--white); margin-top: 2px;
+}
+.form { display: flex; flex-direction: column; gap: 2px; }
+.frow { position: relative; }
+.frow input, .frow textarea {
+  width: 100%; background: var(--mid); border: 1px solid var(--border);
+  color: var(--white); padding: 20px 22px;
+  font-family: var(--font-cormorant); font-size: 1rem;
+  outline: none; transition: border-color .3s; resize: none;
+}
+.frow input:focus, .frow textarea:focus { border-color: var(--border-red); }
+.frow label {
+  position: absolute; top: 20px; left: 22px;
+  font-family: var(--font-mono); font-size: 0.6rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(245,240,235,0.55); pointer-events: none; transition: all .3s;
+}
+.frow input:focus + label, .frow input:not(:placeholder-shown) + label,
+.frow textarea:focus + label, .frow textarea:not(:placeholder-shown) + label {
+  top: -9px; left: 14px; font-size: 0.55rem;
+  color: var(--red); background: var(--dark2); padding: 0 6px;
+}
+.form-submit {
+  padding: 18px 40px;
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  background: var(--red); color: var(--white); border: none; cursor: none;
+  transition: background .3s, box-shadow .3s, transform .3s;
+}
+.form-submit:hover {
+  background: var(--red-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(192, 57, 43, 0.3);
+}
+
+/* ─── FOOTER ─── */
+footer {
+  padding: 36px 60px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; z-index: 1;
+  background: var(--dark);
+}
+.footer-logo {
+  font-family: var(--font-display); font-size: 0.9rem;
+  font-weight: 700; letter-spacing: 0.1em; color: var(--white);
+}
+.footer-logo span { color: var(--red); }
+.footer-links { display: flex; gap: 32px; }
+.footer-links a {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(245,240,235,0.65); text-decoration: none; transition: color .3s;
+}
+.footer-links a:hover { color: var(--red); }
+.footer-copy {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  letter-spacing: 0.15em; color: rgba(245,240,235,0.5);
+}
+
+/* ─── DIVIDER ─── */
+.divider {
+  display: flex; align-items: center; gap: 24px;
+  margin: 60px 0;
+}
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-icon { color: var(--red); font-size: 0.7rem; }
+
+/* ─── KEYFRAMES ─── */
+@keyframes up { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* ─── DECORATIVE VERTICAL TEXT ─── */
+.vert-text {
+  position: absolute; right: -30px; top: 50%; transform: translateY(-50%) rotate(90deg);
+  font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.4em;
+  text-transform: uppercase; color: rgba(245,240,235,0.75); white-space: nowrap;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  #hero { grid-template-columns: 1fr; }
+  .hero-right { height: 60vh; }
+  .hero-left { padding: 140px 30px 60px; }
+  nav { padding: 20px 30px; }
+  nav.scrolled { padding: 14px 30px; }
+  .nav-links, .nav-cta { display: none; }
+  .container { padding: 0 30px; }
+  .about-grid, .exp-header, .skills-layout,
+  .proj-header, .contact-layout { grid-template-columns: 1fr; gap: 48px; }
+  .ach-grid { grid-template-columns: 1fr 1fr; }
+  .about-stats { grid-template-columns: 1fr 1fr; }
+  footer { flex-direction: column; gap: 16px; text-align: center; }
+  .footer-links { flex-wrap: wrap; justify-content: center; }
+}
+@media (max-width: 580px) {
+  .ach-grid { grid-template-columns: 1fr; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .proj-item { grid-template-columns: 40px 1fr; }
+  .proj-link { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-name">Rian Mathew George</div>
+  <div class="loader-line"></div>
+  <div class="loader-num" id="loader-num">000</div>
+</div>
+
+<!-- CURSOR -->
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<!-- PROGRESS -->
+<div id="prog"></div>
+
+<!-- BACKGROUND CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">Rian<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#achievements">Awards</a></li>
+    <li><a href="#projects">Projects</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Contact</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-left">
+    <div class="hero-eyebrow">NTU Computer Science · Singapore</div>
+    <h1 class="hero-name">
+      <span class="name-line">Rian</span>
+      <em class="name-line">Mathew</em>
+      <span class="name-line">George</span>
+    </h1>
+    <p class="hero-subtitle">
+      AI & Data Science · Business Development<br/>
+      Guinness World Record Holder
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="hero-meta-val">4.24</span>
+        <span class="hero-meta-label">CGPA / 5.0</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-val">13g</span>
+        <span class="hero-meta-label">Satellite</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-val">#1</span>
+        <span class="hero-meta-label">Int'l Rank</span>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <a href="#experience" class="btn-red">View My Work</a>
+      <a href="#contact" class="btn-ghost">Get In Touch</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <canvas id="figure-canvas"></canvas>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div>
+        <div class="section-eyebrow">About</div>
+        <h2 class="section-title">Built to<br/><em>Innovate.</em></h2>
+        <div class="divider">
+          <div class="divider-line"></div>
+          <div class="divider-icon">◆</div>
+          <div class="divider-line"></div>
+        </div>
+        <div class="about-body">
+          <p>I am <strong>Rian Mathew George</strong> — a Computer Science student at <strong>Nanyang Technological University, Singapore</strong>, pursuing a Bachelor of Computing with Honours (Distinction), specialising in <span class="red">Artificial Intelligence & Data Science</span> with a second major in Business.</p>
+          <p>Before university, I scored <strong>96%</strong> in CBSE Class 12 with a <strong>perfect 99 in Computer Science</strong>, ranked in the <strong>99th percentile of JEE Mains 2025</strong>, and attained 100% in Computer Science at Class 10.</p>
+          <div class="about-quote">
+            <p>"At 15, I helped launch a 13-gram femto-satellite — earning a Guinness World Record and recognition from four international record bodies."</p>
+          </div>
+          <p>Today I combine rigorous technical foundations with business acumen, working as a <span class="red">Business Development Intern at Blackmon Consulting Asia Pacific</span>, while leading digital and business functions across NTU's computing and cultural communities.</p>
+        </div>
+      </div>
+      <div class="about-sidebar">
+        <div class="about-stats">
+          <div class="stat-box">
+            <div class="stat-n">4.24</div>
+            <div class="stat-l">CGPA / 5.0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-n">4</div>
+            <div class="stat-l">World Records</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-n">800+</div>
+            <div class="stat-l">Event Attendees</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-n">35%</div>
+            <div class="stat-l">Engagement Lift</div>
+          </div>
+        </div>
+        <div class="sidebar-block" style="margin-top:32px">
+          <div class="sidebar-label">Education</div>
+          <div class="sidebar-content">
+            Nanyang Technological University<br/>
+            <span style="color:var(--red-bright)">B.Comp CS (Hons) · AI & Data Science</span><br/>
+            Jul 2025 — Jul 2029
+          </div>
+        </div>
+        <div class="sidebar-block">
+          <div class="sidebar-label">Currently</div>
+          <div class="sidebar-content">
+            Business Development Intern<br/>
+            <span style="color:var(--red-bright)">Blackmon Consulting Asia Pacific</span><br/>
+            Singapore
+          </div>
+        </div>
+        <div class="sidebar-block">
+          <div class="sidebar-label">Certifications</div>
+          <div class="sidebar-content" style="font-size:0.95rem">
+            Programming Fundamentals — Duke University (2026)<br/>
+            Programming for Everybody — U of Michigan (2025)<br/>
+            Python Data Representations — Rice University (2025)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="container">
+    <div class="exp-header">
+      <div>
+        <div class="section-eyebrow">Career</div>
+        <h2 class="section-title">Experience<br/>&amp; <em>Roles.</em></h2>
+      </div>
+      <p class="exp-intro">From launching satellites at 15 to managing S$12K event budgets at NTU — a track record built on impact, leadership, and relentless execution.</p>
+    </div>
+    <div class="exp-list">
+
+      <div class="exp-item">
+        <div class="exp-date">
+          2025<br/>Present<br/>
+          <span class="current">Active</span>
+        </div>
+        <div class="exp-main">
+          <div class="exp-role">Business Development Intern</div>
+          <div class="exp-company">Blackmon Consulting Asia Pacific · Singapore</div>
+          <ul class="exp-desc">
+            <li>Driving business development strategies across the Asia Pacific region.</li>
+            <li>Supporting client engagement, market research, and growth initiatives in competitive regional markets.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-date">
+          Oct 2025<br/>Present<br/>
+          <span class="current">Active</span>
+        </div>
+        <div class="exp-main">
+          <div class="exp-role">Media Lead</div>
+          <div class="exp-company">NTU SCDS — School of Computing & Data Science</div>
+          <ul class="exp-desc">
+            <li>Directed digital publicity for 5+ computing events — hackathons, workshops, and AI seminars.</li>
+            <li>Created 50+ social media posts that boosted Instagram engagement by 35% and grew session attendance from 80 to 120 students.</li>
+            <li>Supervised cross-functional collaboration with 3 student clubs and coordinated photo and video coverage.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-date">
+          Sep 2025<br/>Present<br/>
+          <span class="current">Active</span>
+        </div>
+        <div class="exp-main">
+          <div class="exp-role">Business Manager</div>
+          <div class="exp-company">NTU CAC — Cultural Activities Club</div>
+          <ul class="exp-desc">
+            <li>Managed budgets for 6+ social events including movie nights, cultural showcases, and welcome camps.</li>
+            <li>Secured S$8,000+ in sponsorship from 4 local brands through personalised pitch emails and partnership meetings.</li>
+            <li>Handled vendor negotiations for 800+ attendees, optimising S$12K budgets with a 10% cost reduction.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-date">
+          May 2022<br/>Jun 2023
+        </div>
+        <div class="exp-main">
+          <div class="exp-role">Assistant Cultural Secretary</div>
+          <div class="exp-company">Chettinad Vidyashram School · Chennai, India</div>
+          <ul class="exp-desc">
+            <li>Led cultural council overseeing 10,000 students across flagship festivals and multiple art and performance domains.</li>
+            <li>Fostered cross-team collaboration and creative output at institutional scale.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="container">
+    <div class="skills-layout">
+      <div>
+        <div class="section-eyebrow">Capabilities</div>
+        <h2 class="section-title">Skills &amp;<br/><em>Arsenal.</em></h2>
+        <p class="skills-intro">Technical depth meets business breadth. From low-level C to machine learning pipelines, from financial management to public speaking on national stages.</p>
+      </div>
+      <div class="skills-grid">
+        <div class="skill-card">
+          <div class="skill-category">Programming</div>
+          <div class="skill-items">
+            <div class="skill-item"><span class="skill-name-text">Python</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">C / C++</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">SQL</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">HTML / CSS</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Git</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">OOP</span><span class="skill-dot active"></span></div>
+          </div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-category">AI & Data</div>
+          <div class="skill-items">
+            <div class="skill-item"><span class="skill-name-text">Machine Learning</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Data Analysis</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Data Structures</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Algorithms</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Statistics</span><span class="skill-dot active"></span></div>
+          </div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-category">Business</div>
+          <div class="skill-items">
+            <div class="skill-item"><span class="skill-name-text">Business Development</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Financial Management</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Marketing</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Business Analytics</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Sponsorship Strategy</span><span class="skill-dot active"></span></div>
+          </div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-category">Leadership</div>
+          <div class="skill-items">
+            <div class="skill-item"><span class="skill-name-text">Public Speaking</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Debating</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Event Management</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Team Leadership</span><span class="skill-dot active"></span></div>
+            <div class="skill-item"><span class="skill-name-text">Cross-Cultural Collab</span><span class="skill-dot active"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACHIEVEMENTS -->
+<section id="achievements">
+  <div class="container">
+    <div class="section-eyebrow">Recognition</div>
+    <h2 class="section-title">Awards &amp; <em>Records.</em></h2>
+    <div class="ach-grid">
+      <div class="ach-card">
+        <div class="ach-num">01</div>
+        <div class="ach-badge">Guinness World Record</div>
+        <div class="ach-title">Lightest Satellite Payload Launch</div>
+        <div class="ach-desc">Spearheaded development of a 13-gram femto-satellite payload. Featured in Guinness, Asia, World, and India Book of Records — Feb 7, 2021.</div>
+      </div>
+      <div class="ach-card">
+        <div class="ach-num">02</div>
+        <div class="ach-badge">International Rank 1</div>
+        <div class="ach-title">SOF English Olympiad — 60/60</div>
+        <div class="ach-desc">Achieved International Rank 1 with a perfect score of 60/60 in the SOF International English Olympiad, May 2023.</div>
+      </div>
+      <div class="ach-card">
+        <div class="ach-num">03</div>
+        <div class="ach-badge">Academic Excellence</div>
+        <div class="ach-title">Outstanding Achiever & Young Achiever Award</div>
+        <div class="ach-desc">Recognised for excellence in satellite research, innovation, and exceptional all-round performance in academics and sports. May 2025.</div>
+      </div>
+      <div class="ach-card">
+        <div class="ach-num">04</div>
+        <div class="ach-badge">JEE Mains 2025</div>
+        <div class="ach-title">99th Percentile</div>
+        <div class="ach-desc">Secured 99th percentile in JEE Mains 2025, one of the most competitive engineering entrance exams globally, with 600,000+ candidates.</div>
+      </div>
+      <div class="ach-card">
+        <div class="ach-num">05</div>
+        <div class="ach-badge">NTU · CGPA 4.24 / 5.0</div>
+        <div class="ach-title">Honours with Distinction</div>
+        <div class="ach-desc">Bachelor of Computing (Hons) in Computer Science with Second Major in Business at NTU Singapore, specialising in AI & Data Science.</div>
+      </div>
+      <div class="ach-card">
+        <div class="ach-num">06</div>
+        <div class="ach-badge">Certifications</div>
+        <div class="ach-title">Top University Certifications</div>
+        <div class="ach-desc">Duke University (Programming Fundamentals) · University of Michigan (Programming for Everybody) · Rice University (Python Data Representations).</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="container">
+    <div class="proj-header">
+      <div>
+        <div class="section-eyebrow">Work</div>
+        <h2 class="section-title">Technical<br/><em>Projects.</em></h2>
+      </div>
+      <p class="proj-intro">Real problems, working solutions. Every project is built to demonstrate applied thinking — not just theory.</p>
+    </div>
+    <div class="proj-list">
+      <div class="proj-item">
+        <div class="proj-n">01</div>
+        <div>
+          <div class="proj-name">Automated Team Formation System</div>
+          <div class="proj-desc">Applied data analysis and fairness algorithms to balance 6,000 students across 120 tutorial groups. Led as Team Lead at NTU's Introduction to Data Science course, Nov 2025.</div>
+          <div class="proj-tags">
+            <span class="proj-tag">Python</span>
+            <span class="proj-tag">Data Analysis</span>
+            <span class="proj-tag">Algorithms</span>
+            <span class="proj-tag">NTU</span>
+          </div>
+        </div>
+        <a href="https://github.com/rianmathewgeorge" target="_blank" class="proj-link">GitHub ↗</a>
+      </div>
+      <div class="proj-item">
+        <div class="proj-n">02</div>
+        <div>
+          <div class="proj-name">Casino Roulette Simulator</div>
+          <div class="proj-desc">Probability theory and control-flow algorithms powering a simulation-based casino game. Presented to groups of ~50 students as an engaging data-driven computing model.</div>
+          <div class="proj-tags">
+            <span class="proj-tag">Python</span>
+            <span class="proj-tag">Probability</span>
+            <span class="proj-tag">Simulation</span>
+          </div>
+        </div>
+        <a href="https://github.com/rianmathewgeorge/CASINO-ROULETTE-PROJECT" target="_blank" class="proj-link">GitHub ↗</a>
+      </div>
+      <div class="proj-item">
+        <div class="proj-n">03</div>
+        <div>
+          <div class="proj-name">Emotion Recognition Tool</div>
+          <div class="proj-desc">Interactive emotion recognition with a 6-button interface classifying 4 emotions via broadcasts and conditional logic across 8 sprites. Instant feedback animations for classroom engagement.</div>
+          <div class="proj-tags">
+            <span class="proj-tag">Machine Learning</span>
+            <span class="proj-tag">Computer Vision</span>
+            <span class="proj-tag">Educational UI</span>
+          </div>
+        </div>
+        <a href="https://github.com/rianmathewgeorge" target="_blank" class="proj-link">GitHub ↗</a>
+      </div>
+      <div class="proj-item">
+        <div class="proj-n">04</div>
+        <div>
+          <div class="proj-name">13g Femto-Satellite Payload</div>
+          <div class="proj-desc">Spearheaded development and launch of an ultra-light femto-satellite payload. Guinness World Record — Lightest Payload Launch — February 7, 2021. Age 15.</div>
+          <div class="proj-tags">
+            <span class="proj-tag">Aerospace</span>
+            <span class="proj-tag">Engineering</span>
+            <span class="proj-tag">World Record</span>
+          </div>
+        </div>
+        <a href="https://www.linkedin.com/in/rian-mathew-george/" target="_blank" class="proj-link">LinkedIn ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="container">
+    <div class="section-eyebrow">Contact</div>
+    <h2 class="section-title" style="margin-bottom:60px">Let's <em>Talk.</em></h2>
+    <div class="contact-layout">
+      <div>
+        <p class="contact-body">Open to internship opportunities, research collaborations, and conversations about AI, data science, and innovation. Based in Singapore.</p>
+        <div class="contact-items">
+          <a href="mailto:rianmathew4@gmail.com" class="contact-item">
+            <div class="contact-icon">✉</div>
+            <div class="contact-info">
+              <div class="contact-lbl">Email</div>
+              <div class="contact-val">rianmathew4@gmail.com</div>
+            </div>
+          </a>
+          <a href="tel:+6589670109" class="contact-item">
+            <div class="contact-icon">☎</div>
+            <div class="contact-info">
+              <div class="contact-lbl">Phone</div>
+              <div class="contact-val">+65 8967 0109</div>
+            </div>
+          </a>
+          <a href="https://linkedin.com/in/rian-mathew-george" target="_blank" class="contact-item">
+            <div class="contact-icon">in</div>
+            <div class="contact-info">
+              <div class="contact-lbl">LinkedIn</div>
+              <div class="contact-val">rian-mathew-george</div>
+            </div>
+          </a>
+          <a href="https://github.com/rianmathewgeorge" target="_blank" class="contact-item">
+            <div class="contact-icon">gh</div>
+            <div class="contact-info">
+              <div class="contact-lbl">GitHub</div>
+              <div class="contact-val">rianmathewgeorge</div>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="form">
+        <div class="frow">
+          <input type="text" id="fn" placeholder=" "/>
+          <label for="fn">Your Name</label>
+        </div>
+        <div class="frow">
+          <input type="email" id="fe" placeholder=" "/>
+          <label for="fe">Your Email</label>
+        </div>
+        <div class="frow">
+          <input type="text" id="fs" placeholder=" "/>
+          <label for="fs">Subject</label>
+        </div>
+        <div class="frow">
+          <textarea id="fm" rows="5" placeholder=" "></textarea>
+          <label for="fm">Message</label>
+        </div>
+        <button class="form-submit">Send Message</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Rian<span>.</span></div>
+  <div class="footer-links">
+    <a href="https://github.com/rianmathewgeorge" target="_blank">GitHub</a>
+    <a href="https://linkedin.com/in/rian-mathew-george" target="_blank">LinkedIn</a>
+    <a href="mailto:rianmathew4@gmail.com">Email</a>
+  </div>
+  <div class="footer-copy">© 2025 Rian Mathew George · Singapore</div>
+</footer>
+
+<script>
+// ─── LOADER ───────────────────────────────────────────────────────────────────
+let loadN = 0;
+const numEl = document.getElementById('loader-num');
+const loaderInt = setInterval(() => {
+  loadN = Math.min(loadN + Math.floor(Math.random() * 12) + 4, 100);
+  numEl.textContent = String(loadN).padStart(3, '0');
+  if (loadN >= 100) {
+    clearInterval(loaderInt);
+    setTimeout(() => {
+      const ld = document.getElementById('loader');
+      ld.style.opacity = '0';
+      setTimeout(() => ld.style.display = 'none', 1000);
+    }, 400);
+  }
+}, 40);
+
+// ─── CURSOR ───────────────────────────────────────────────────────────────────
+const cur = document.getElementById('cur');
+const curRing = document.getElementById('cur-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+});
+(function animRing() {
+  rx += (mx - rx) * 0.1; ry += (my - ry) * 0.1;
+  curRing.style.left = rx + 'px'; curRing.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+})();
+
+// ─── PROGRESS + NAV SCROLL ───────────────────────────────────────────────────
+const prog = document.getElementById('prog');
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  prog.style.width = pct + '%';
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ─── DEEP SPACE BG ───────────────────────────────────────────────────────────
+(function () {
+  const c = document.getElementById('bg-canvas');
+  const ctx = c.getContext('2d');
+  let W, H;
+  const resize = () => { W = c.width = window.innerWidth; H = c.height = window.innerHeight; };
+  resize(); window.addEventListener('resize', resize);
+
+  // Stars
+  const stars = Array.from({ length: 200 }, () => ({
+    x: Math.random(), y: Math.random(),
+    r: Math.random() * 0.9 + 0.1,
+    a: Math.random() * 0.6 + 0.1,
+    speed: Math.random() * 0.0002 + 0.00005,
+    phase: Math.random() * Math.PI * 2
+  }));
+
+  // Nebula particles
+  const nebula = Array.from({ length: 60 }, () => ({
+    x: Math.random() * 2000, y: Math.random() * 2000, z: Math.random() * 1000 + 100,
+    vz: Math.random() * 0.6 + 0.2, r: 1
+  }));
+
+  let t = 0;
+  function draw() {
+    t += 0.01;
+    ctx.fillStyle = 'rgba(8,8,8,0.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    // Stars twinkle
+    stars.forEach(s => {
+      const tw = s.a * (0.5 + 0.5 * Math.sin(t * s.speed * 300 + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(245,240,235,${tw})`;
+      ctx.fill();
+    });
+
+    // Red nebula streaks
+    nebula.forEach(p => {
+      p.z -= p.vz;
+      if (p.z <= 0) { p.z = 1000; p.x = Math.random() * 2000; p.y = Math.random() * 2000; }
+      const sx = (p.x - 1000) / p.z * W + W / 2;
+      const sy = (p.y - 1000) / p.z * H + H / 2;
+      const size = (1 - p.z / 1000) * 1.5;
+      const alpha = (1 - p.z / 1000) * 0.35;
+      ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(192,57,43,${alpha})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── HERO 3D SCENE ────────────────────────────────────────────────────────────
+(function () {
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const resize = () => renderer.setSize(window.innerWidth, window.innerHeight);
+  resize();
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
+  camera.position.z = 6;
+
+  // Spinning rings
+  const ringData = [
+    { r: 3.5, tube: 0.012, speed: 0.004, rx: 1.1, ry: 0.2, col: 0xC0392B, op: 0.35 },
+    { r: 5, tube: 0.008, speed: -0.003, rx: 0.6, ry: 1.1, col: 0xC0392B, op: 0.15 },
+    { r: 2.2, tube: 0.015, speed: 0.007, rx: 0.3, ry: 0.8, col: 0xE74C3C, op: 0.2 },
+  ];
+  const rings = ringData.map(d => {
+    const g = new THREE.TorusGeometry(d.r, d.tube, 8, 100);
+    const m = new THREE.MeshBasicMaterial({ color: d.col, transparent: true, opacity: d.op });
+    const mesh = new THREE.Mesh(g, m);
+    mesh.rotation.x = d.rx; mesh.rotation.y = d.ry;
+    scene.add(mesh);
+    return { mesh, speed: d.speed };
+  });
+
+  // Floating geo
+  const geos = [
+    new THREE.OctahedronGeometry(0.22),
+    new THREE.IcosahedronGeometry(0.18),
+    new THREE.TetrahedronGeometry(0.2),
+  ];
+  const floaters = Array.from({ length: 14 }, (_, i) => {
+    const g = geos[i % geos.length];
+    const isWire = i % 2 === 0;
+    const m = new THREE.MeshPhongMaterial({
+      color: i % 3 === 0 ? 0xC0392B : 0x7B241C,
+      wireframe: isWire, transparent: true, opacity: isWire ? 0.3 : 0.6,
+      emissive: 0x3D0C08
+    });
+    const mesh = new THREE.Mesh(g, m);
+    mesh.position.set((Math.random() - 0.5) * 14, (Math.random() - 0.5) * 8, (Math.random() - 0.5) * 4 - 1);
+    scene.add(mesh);
+    return { mesh, rx: (Math.random() - 0.5) * 0.015, ry: (Math.random() - 0.5) * 0.012, vy: (Math.random() - 0.5) * 0.004 };
+  });
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+  const pl = new THREE.PointLight(0xC0392B, 2, 20); pl.position.set(4, 2, 3); scene.add(pl);
+
+  let mouseX = 0, mouseY = 0;
+  document.addEventListener('mousemove', e => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 1.5;
+    mouseY = -(e.clientY / window.innerHeight - 0.5);
+  });
+  window.addEventListener('resize', () => {
+    resize(); camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+  });
+
+  (function anim() {
+    requestAnimationFrame(anim);
+    rings.forEach(r => { r.mesh.rotation.z += r.speed; r.mesh.rotation.y += r.speed * 0.5; });
+    floaters.forEach(f => {
+      f.mesh.rotation.x += f.rx; f.mesh.rotation.y += f.ry;
+      f.mesh.position.y += f.vy;
+      if (Math.abs(f.mesh.position.y) > 5) f.vy *= -1;
+    });
+    camera.position.x += (mouseX - camera.position.x) * 0.04;
+    camera.position.y += (mouseY - camera.position.y) * 0.04;
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
+  })();
+})();
+
+// ─── 3D ACTION FIGURE ─────────────────────────────────────────────────────────
+(function () {
+  const canvas = document.getElementById('figure-canvas');
+  const parent = canvas.parentElement;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0x000000, 0);
+
+  function getSize() {
+    const rect = parent.getBoundingClientRect();
+    return {
+      w: rect.width > 0 ? rect.width : window.innerWidth / 2,
+      h: rect.height > 0 ? rect.height : window.innerHeight
+    };
+  }
+
+  const resize = () => {
+    const { w, h } = getSize();
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  };
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  camera.position.set(0, 1.2, 6.5);
+  camera.lookAt(0, 0.8, 0);
+
+  // ── MATERIALS ──
+  const skin = new THREE.MeshStandardMaterial({ color: 0xD4915C, roughness: 0.55, metalness: 0.02 });
+  const suit = new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.35, metalness: 0.4 });
+  const suitDark = new THREE.MeshStandardMaterial({ color: 0x242424, roughness: 0.45, metalness: 0.3 });
+  const shirt = new THREE.MeshStandardMaterial({ color: 0xF0E8DC, roughness: 0.65, metalness: 0 });
+  const hair = new THREE.MeshStandardMaterial({ color: 0x1A0A00, roughness: 0.75, metalness: 0 });
+  const redMat = new THREE.MeshStandardMaterial({ color: 0xC0392B, roughness: 0.25, metalness: 0.55, emissive: 0x5C0A0A, emissiveIntensity: 0.5 });
+  const pupilMat = new THREE.MeshStandardMaterial({ color: 0x050200, roughness: 0.1 });
+  const whiteMat = new THREE.MeshStandardMaterial({ color: 0xF8F2EC, roughness: 0.75 });
+  const goldMat = new THREE.MeshStandardMaterial({ color: 0xDAA520, roughness: 0.15, metalness: 0.95, emissive: 0x4A3000, emissiveIntensity: 0.3 });
+
+  const fig = new THREE.Group();
+
+  // ── TORSO ──
+  const torsoG = new THREE.BoxGeometry(1.1, 1.3, 0.6, 1, 1, 1);
+  const torso = new THREE.Mesh(torsoG, suit); torso.position.y = 0; fig.add(torso);
+  torso.castShadow = true;
+
+  // Lapels
+  const lapL = new THREE.BoxGeometry(0.25, 0.7, 0.04);
+  const lapelL = new THREE.Mesh(lapL, suitDark); lapelL.position.set(-0.22, 0.2, 0.31); lapelL.rotation.z = 0.18; fig.add(lapelL);
+  const lapelR = new THREE.Mesh(lapL, suitDark); lapelR.position.set(0.22, 0.2, 0.31); lapelR.rotation.z = -0.18; fig.add(lapelR);
+
+  // Shirt / chest
+  const shirtG = new THREE.BoxGeometry(0.3, 0.65, 0.05);
+  const shirtM = new THREE.Mesh(shirtG, shirt); shirtM.position.set(0, 0.05, 0.31); fig.add(shirtM);
+
+  // Tie
+  const tieG = new THREE.BoxGeometry(0.08, 0.55, 0.04);
+  const tieM = new THREE.Mesh(tieG, redMat); tieM.position.set(0, 0.05, 0.34); fig.add(tieM);
+
+  // Tie pin (gold)
+  const pinG = new THREE.CylinderGeometry(0.025, 0.025, 0.1, 8);
+  const pinM = new THREE.Mesh(pinG, goldMat); pinM.rotation.z = Math.PI / 2; pinM.position.set(0, 0.08, 0.36); fig.add(pinM);
+
+  // Suit buttons
+  for (let i = 0; i < 2; i++) {
+    const btnG = new THREE.SphereGeometry(0.025, 8, 8);
+    const btn = new THREE.Mesh(btnG, goldMat); btn.position.set(0, -0.15 + i * 0.25, 0.32); fig.add(btn);
+  }
+
+  // Pocket square
+  const pockG = new THREE.BoxGeometry(0.12, 0.1, 0.02);
+  const pock = new THREE.Mesh(pockG, whiteMat); pock.position.set(-0.36, 0.38, 0.31); fig.add(pock);
+
+  // ── NECK ──
+  const neckG = new THREE.CylinderGeometry(0.15, 0.18, 0.22, 10);
+  const neckM = new THREE.Mesh(neckG, skin); neckM.position.y = 0.76; fig.add(neckM);
+
+  // ── HEAD ──
+  const headG = new THREE.SphereGeometry(0.46, 24, 20);
+  const headM = new THREE.Mesh(headG, skin); headM.position.y = 1.3; headM.scale.set(1, 1.08, 0.93); headM.castShadow = true; fig.add(headM);
+
+  // Jaw / chin definition
+  const chinG = new THREE.SphereGeometry(0.2, 12, 10);
+  const chinM = new THREE.Mesh(chinG, skin); chinM.position.set(0, 0.96, 0.14); chinM.scale.set(1, 0.6, 0.7); fig.add(chinM);
+
+  // ── HAIR ──
+  // Main mass
+  const hairG = new THREE.SphereGeometry(0.47, 16, 14);
+  const hairMain = new THREE.Mesh(hairG, hair); hairMain.position.set(0, 1.48, -0.06); hairMain.scale.set(1, 0.55, 0.88); fig.add(hairMain);
+
+  // Side parts
+  const hairSideG = new THREE.SphereGeometry(0.38, 12, 10);
+  const hairSL = new THREE.Mesh(hairSideG, hair); hairSL.position.set(-0.32, 1.42, -0.02); hairSL.scale.set(0.65, 0.52, 0.75); fig.add(hairSL);
+  const hairSR = new THREE.Mesh(hairSideG, hair); hairSR.position.set(0.32, 1.42, -0.02); hairSR.scale.set(0.65, 0.52, 0.75); fig.add(hairSR);
+
+  // Swept-up front tuft
+  const tuftG = new THREE.SphereGeometry(0.24, 10, 10);
+  const tuft = new THREE.Mesh(tuftG, hair); tuft.position.set(-0.06, 1.75, 0.14); tuft.scale.set(1.1, 1.2, 0.65); tuft.rotation.z = -0.25; fig.add(tuft);
+  const tuft2 = new THREE.Mesh(tuftG, hair); tuft2.position.set(0.1, 1.72, 0.1); tuft2.scale.set(0.8, 1.0, 0.6); tuft2.rotation.z = 0.15; fig.add(tuft2);
+
+  // ── FACE FEATURES ──
+  // Eye sockets (subtle depth)
+  const socketG = new THREE.SphereGeometry(0.11, 10, 10);
+  const socketMat = new THREE.MeshStandardMaterial({ color: 0xB07040, roughness: 0.9 });
+  [-0.165, 0.165].forEach(x => {
+    const s = new THREE.Mesh(socketG, socketMat); s.position.set(x, 1.33, 0.37); s.scale.set(1, 0.8, 0.5); fig.add(s);
+  });
+
+  // Eyes - whites
+  const eyeG = new THREE.SphereGeometry(0.095, 12, 10);
+  [-0.165, 0.165].forEach(x => {
+    const ew = new THREE.Mesh(eyeG, whiteMat); ew.position.set(x, 1.33, 0.39); ew.scale.set(1, 0.82, 0.72); fig.add(ew);
+    // Iris (dark brown)
+    const irisG = new THREE.SphereGeometry(0.058, 10, 10);
+    const irisMat = new THREE.MeshStandardMaterial({ color: 0x3D1C00, roughness: 0.2 });
+    const iris = new THREE.Mesh(irisG, irisMat); iris.position.set(x, 1.33, 0.43); iris.scale.set(1, 0.82, 0.72); fig.add(iris);
+    // Pupil
+    const pupG = new THREE.SphereGeometry(0.034, 8, 8);
+    const pup = new THREE.Mesh(pupG, pupilMat); pup.position.set(x, 1.33, 0.45); pup.scale.set(1, 0.82, 0.72); fig.add(pup);
+    // Highlight
+    const hilG = new THREE.SphereGeometry(0.015, 6, 6);
+    const hilMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0 });
+    const hil = new THREE.Mesh(hilG, hilMat); hil.position.set(x + 0.02, 1.35, 0.46); fig.add(hil);
+  });
+
+  // Eyebrows — thicker, more defined
+  const browG = new THREE.BoxGeometry(0.18, 0.03, 0.04);
+  const browMat = new THREE.MeshStandardMaterial({ color: 0x0D0600, roughness: 0.9 });
+  const browL = new THREE.Mesh(browG, browMat); browL.position.set(-0.165, 1.44, 0.39); browL.rotation.z = 0.12; fig.add(browL);
+  const browR = new THREE.Mesh(browG, browMat); browR.position.set(0.165, 1.44, 0.39); browR.rotation.z = -0.12; fig.add(browR);
+
+  // Nose
+  const noseG = new THREE.SphereGeometry(0.042, 8, 8);
+  const nose = new THREE.Mesh(noseG, skin); nose.position.set(0, 1.21, 0.43); nose.scale.set(0.9, 0.7, 0.7); fig.add(nose);
+
+  // Subtle smile / lips
+  const lipG = new THREE.BoxGeometry(0.16, 0.022, 0.025);
+  const lipMat = new THREE.MeshStandardMaterial({ color: 0x9B5035, roughness: 0.7 });
+  const lips = new THREE.Mesh(lipG, lipMat); lips.position.set(0, 1.1, 0.42); fig.add(lips);
+
+  // Ears
+  const earG = new THREE.SphereGeometry(0.09, 8, 8);
+  [-0.46, 0.46].forEach((x, i) => {
+    const ear = new THREE.Mesh(earG, skin); ear.position.set(x, 1.3, 0); ear.scale.set(0.55, 0.8, 0.5); fig.add(ear);
+  });
+
+  // ── SHOULDERS ──
+  const shoulderG = new THREE.SphereGeometry(0.28, 12, 10);
+  [-0.7, 0.7].forEach(x => {
+    const sh = new THREE.Mesh(shoulderG, suit); sh.position.set(x, 0.5, 0); sh.scale.set(1, 0.8, 0.9); fig.add(sh);
+  });
+
+  // ── ARMS ──
+  const armG = new THREE.CylinderGeometry(0.13, 0.115, 1.0, 10);
+  const lArm = new THREE.Mesh(armG, suit); lArm.position.set(-0.76, -0.1, 0.04); lArm.rotation.z = 0.15; lArm.castShadow = true; fig.add(lArm);
+  const rArm = new THREE.Mesh(armG, suit); rArm.position.set(0.76, -0.1, 0.04); rArm.rotation.z = -0.15; rArm.castShadow = true; fig.add(rArm);
+
+  // Cuffs
+  const cuffG = new THREE.CylinderGeometry(0.135, 0.13, 0.1, 10);
+  const cuffMat = new THREE.MeshStandardMaterial({ color: 0xD8D0C5, roughness: 0.6 });
+  const cuffL = new THREE.Mesh(cuffG, cuffMat); cuffL.position.set(-0.88, -0.55, 0.08); cuffL.rotation.z = 0.15; fig.add(cuffL);
+  const cuffR = new THREE.Mesh(cuffG, cuffMat); cuffR.position.set(0.88, -0.55, 0.08); cuffR.rotation.z = -0.15; fig.add(cuffR);
+
+  // ── HANDS ──
+  const handG = new THREE.SphereGeometry(0.13, 10, 8);
+  const lHand = new THREE.Mesh(handG, skin); lHand.position.set(-0.96, -0.68, 0.1); lHand.scale.set(0.9, 0.75, 0.85); fig.add(lHand);
+  const rHand = new THREE.Mesh(handG, skin); rHand.position.set(0.96, -0.68, 0.1); rHand.scale.set(0.9, 0.75, 0.85); fig.add(rHand);
+
+  // Watch (left wrist)
+  const watchG = new THREE.BoxGeometry(0.14, 0.06, 0.08);
+  const watchM = new THREE.MeshStandardMaterial({ color: 0x1C1C1C, roughness: 0.2, metalness: 0.8 });
+  const watch = new THREE.Mesh(watchG, watchM); watch.position.set(-0.92, -0.6, 0.12); watch.rotation.z = 0.15; fig.add(watch);
+  const watchFaceG = new THREE.BoxGeometry(0.1, 0.045, 0.01);
+  const watchFace = new THREE.Mesh(watchFaceG, new THREE.MeshStandardMaterial({ color: 0xC0392B, roughness: 0.1, metalness: 0.3, emissive: 0x500000 }));
+  watchFace.position.set(-0.92, -0.6, 0.17); watchFace.rotation.z = 0.15; fig.add(watchFace);
+
+  // ── LEGS ──
+  const legG = new THREE.BoxGeometry(0.42, 1.3, 0.42);
+  const legL = new THREE.Mesh(legG, suit); legL.position.set(-0.28, -1.3, 0); legL.castShadow = true; fig.add(legL);
+  const legR = new THREE.Mesh(legG, suit); legR.position.set(0.28, -1.3, 0); legR.castShadow = true; fig.add(legR);
+
+  // Trouser crease
+  const creaseG = new THREE.BoxGeometry(0.02, 1.2, 0.02);
+  const creaseMat = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.8 });
+  [-0.28, 0.28].forEach(x => {
+    const cr = new THREE.Mesh(creaseG, creaseMat); cr.position.set(x, -1.3, 0.21); fig.add(cr);
+  });
+
+  // ── SHOES ──
+  const shoeG = new THREE.BoxGeometry(0.44, 0.18, 0.6);
+  const shoeMat = new THREE.MeshStandardMaterial({ color: 0x060606, roughness: 0.3, metalness: 0.4 });
+  const shoeL = new THREE.Mesh(shoeG, shoeMat); shoeL.position.set(-0.28, -2.04, 0.09); shoeL.castShadow = true; fig.add(shoeL);
+  const shoeR = new THREE.Mesh(shoeG, shoeMat); shoeR.position.set(0.28, -2.04, 0.09); shoeR.castShadow = true; fig.add(shoeR);
+
+  // Shoe soles
+  const soleG = new THREE.BoxGeometry(0.45, 0.05, 0.62);
+  const soleMat = new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.9 });
+  [-0.28, 0.28].forEach(x => {
+    const sol = new THREE.Mesh(soleG, soleMat); sol.position.set(x, -2.15, 0.09); fig.add(sol);
+  });
+
+  // ── BASE PLATFORM ──
+  const baseG = new THREE.CylinderGeometry(1.1, 1.2, 0.08, 32);
+  const baseMat = new THREE.MeshStandardMaterial({ color: 0x0D0D0D, roughness: 0.3, metalness: 0.6 });
+  const base = new THREE.Mesh(baseG, baseMat); base.position.y = -2.24; base.receiveShadow = true; fig.add(base);
+
+  // Red ring on base
+  const baseRingG = new THREE.TorusGeometry(1.05, 0.025, 8, 64);
+  const baseRing = new THREE.Mesh(baseRingG, redMat); baseRing.position.y = -2.2; baseRing.rotation.x = Math.PI / 2; fig.add(baseRing);
+
+  // Nameplate
+  const plateG = new THREE.BoxGeometry(0.9, 0.08, 0.12);
+  const plateMat = new THREE.MeshStandardMaterial({ color: 0x8B0000, roughness: 0.2, metalness: 0.7, emissive: 0x2D0000 });
+  const plate = new THREE.Mesh(plateG, plateMat); plate.position.set(0, -2.2, 0.62); fig.add(plate);
+
+  // ── FLOATING ORB (satellite) ──
+  const orbGrp = new THREE.Group();
+  const orbG = new THREE.SphereGeometry(0.1, 14, 12);
+  const orbMat = new THREE.MeshStandardMaterial({ color: 0xC0392B, roughness: 0.1, metalness: 0.8, emissive: 0x5C0A0A, emissiveIntensity: 0.5 });
+  const orb = new THREE.Mesh(orbG, orbMat); orbGrp.add(orb);
+  // Solar panels
+  const panG = new THREE.BoxGeometry(0.35, 0.06, 0.004);
+  const panMat = new THREE.MeshStandardMaterial({ color: 0x0A1A2E, roughness: 0.3, metalness: 0.6, emissive: 0x001133 });
+  [-0.23, 0.23].forEach(x => {
+    const pan = new THREE.Mesh(panG, panMat); pan.position.x = x; orbGrp.add(pan);
+  });
+  orbGrp.position.set(1.8, 1.2, 0.8);
+  orbGrp.scale.setScalar(1.1);
+  fig.add(orbGrp);
+
+  // Orbit line
+  const orbLineG = new THREE.TorusGeometry(1.6, 0.006, 6, 80);
+  const orbLineMat = new THREE.MeshBasicMaterial({ color: 0xC0392B, transparent: true, opacity: 0.18 });
+  const orbLine = new THREE.Mesh(orbLineG, orbLineMat);
+  orbLine.rotation.x = Math.PI / 4; orbLine.rotation.y = 0.5;
+  orbLine.position.y = 0.3;
+  fig.add(orbLine);
+
+  // ── AURA / GLOW RING ──
+  const auraG = new THREE.TorusGeometry(1.5, 0.008, 6, 100);
+  const auraMat = new THREE.MeshBasicMaterial({ color: 0xC0392B, transparent: true, opacity: 0.12 });
+  const aura = new THREE.Mesh(auraG, auraMat); aura.rotation.x = Math.PI / 2; aura.position.y = -2.18; fig.add(aura);
+
+  scene.add(fig);
+
+  // ── LIGHTS ── MUCH BRIGHTER ──
+  const ambient = new THREE.AmbientLight(0xFFEEE8, 1.2); scene.add(ambient);
+
+  const keyL = new THREE.DirectionalLight(0xFFFFFF, 3.5);
+  keyL.position.set(3, 5, 4); keyL.castShadow = true; scene.add(keyL);
+
+  const fillL = new THREE.DirectionalLight(0xFF6655, 1.8);
+  fillL.position.set(-4, 2, 3); scene.add(fillL);
+
+  const rimL = new THREE.DirectionalLight(0xFFDDD0, 2.0);
+  rimL.position.set(0, 3, -4); scene.add(rimL);
+
+  const frontL = new THREE.DirectionalLight(0xFFFFFF, 2.5);
+  frontL.position.set(0, 1, 6); scene.add(frontL);
+
+  const redSpot = new THREE.PointLight(0xC0392B, 5, 8);
+  redSpot.position.set(0, -1.5, 2.5); scene.add(redSpot);
+
+  const topL = new THREE.PointLight(0xFFEEE0, 3, 10);
+  topL.position.set(0, 6, 2); scene.add(topL);
+
+  const sideL = new THREE.PointLight(0xFF4433, 2, 8);
+  sideL.position.set(3, 0, 1); scene.add(sideL);
+
+  // ── GROUND SHADOW PLANE ──
+  const planeG = new THREE.PlaneGeometry(8, 8);
+  const planeMat = new THREE.ShadowMaterial({ opacity: 0.4 });
+  const plane = new THREE.Mesh(planeG, planeMat); plane.rotation.x = -Math.PI / 2; plane.position.y = -2.28; plane.receiveShadow = true; scene.add(plane);
+
+  // Initial size — call immediately and again after short delay to catch layout
+  resize();
+  setTimeout(resize, 100);
+  setTimeout(resize, 500);
+  window.addEventListener('resize', resize);
+
+  let t = 0;
+  let figMouseX = 0, figMouseY = 0;
+  document.addEventListener('mousemove', e => {
+    figMouseX = (e.clientX / window.innerWidth - 0.5) * 0.5;
+    figMouseY = -(e.clientY / window.innerHeight - 0.5) * 0.25;
+  });
+
+  (function animFig() {
+    requestAnimationFrame(animFig);
+    t += 0.015;
+
+    // Subtle breathing bob
+    fig.position.y = Math.sin(t * 0.6) * 0.04;
+
+    // Slight character look at mouse
+    fig.rotation.y += (figMouseX * 0.4 - fig.rotation.y) * 0.05;
+    headM.rotation.y += (figMouseX * 0.3 - headM.rotation.y) * 0.06;
+    headM.rotation.x += (figMouseY * 0.25 - headM.rotation.x) * 0.06;
+
+    // Hair follows head
+    hairMain.rotation.y = headM.rotation.y * 0.8;
+    tuft.rotation.y = headM.rotation.y * 0.8;
+    tuft2.rotation.y = headM.rotation.y * 0.8;
+
+    // Orbit satellite
+    const orbAngle = t * 0.55;
+    orbGrp.position.x = Math.cos(orbAngle) * 1.65;
+    orbGrp.position.z = Math.sin(orbAngle) * 0.9 + 0.4;
+    orbGrp.position.y = 0.3 + Math.sin(orbAngle * 0.7) * 0.4;
+    orbGrp.rotation.y += 0.03;
+
+    // Aura pulse
+    const pulse = 1 + Math.sin(t * 1.5) * 0.015;
+    aura.scale.x = pulse; aura.scale.z = pulse;
+
+    // Red glow pulse
+    redSpot.intensity = 4 + Math.sin(t * 1.2) * 1.2;
+    sideL.intensity = 1.5 + Math.sin(t * 0.9 + 1) * 0.5;
+
+    // Key light orbit
+    keyL.position.x = 3 * Math.cos(t * 0.2);
+    keyL.position.z = 3 * Math.sin(t * 0.2) + 3;
+
+    renderer.render(scene, camera);
+  })();
+})();
+
+// ─── INTERSECTION OBSERVER ────────────────────────────────────────────────────
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.exp-item, .ach-card, .proj-item, .skill-card').forEach((el, i) => {
+  el.style.transitionDelay = (i % 4) * 0.1 + 's';
+  obs.observe(el);
+});
+</script>
+</body>
+</html>
